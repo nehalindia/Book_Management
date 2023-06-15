@@ -1,0 +1,18 @@
+{
+  "dependencies": {
+    "dotenv": "^16.1.4",
+    "express": "^4.18.2",
+    "mongoose": "^7.3.0"
+  },
+  "name": "book_management",
+  "description": "-  Branch name should follow the naming convention `project/booksManagement`\r - Follow the naming conventions exactly as instructed.",
+  "version": "1.0.0",
+  "main": "index.js",
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start" : "nodemon src/index.js"
+  },
+  "author": "",
+  "license": "ISC"
+}
