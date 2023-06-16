@@ -9,7 +9,7 @@
 
 const mongoose = require('mongoose')
 const ObjectId = mongoose.Schema.Types.ObjectId
-const reviewModel = new mongoose.Schema({
+const reviewSchema = new mongoose.Schema({
     bookId: {
         type:ObjectId,
         required:[true,'bookid is mandatory'],
@@ -41,4 +41,4 @@ const reviewModel = new mongoose.Schema({
 },{timestamps:true})
 
 
-module.exports = mongoose.model('review',reviewModel)
+module.exports = mongoose.model('review',reviewSchema)
