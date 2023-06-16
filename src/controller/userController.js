@@ -1,6 +1,6 @@
-const { response } = require('express');
 const userModel = require('../models/userModel')
 const validator = require('validator');
+const jwt = require('jsonwebtoken');
 
 const createUser = async (req,res) => {
     try{
@@ -56,5 +56,28 @@ const createUser = async (req,res) => {
     }
 }
 
+const login = async (req,res)=>{
+    try {
+        if (!/^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/.test(req.body.email)) {
+            return res.status(400).send({status: false, message:  'Email should be a valid email address'})
+        }
+        if (!req.body.password) {
+            return res.status(400).send({status: false, message:  'Password must added'})
+        }
+        const user = await userModel.findOne({email:req.body.email});
+        if(!user) return res.status(401).send({status:false, message: "invalid user!"});
+        if(user.password !== req.body.password){
+            return res.status(401).send({status: false,message:'ivalid user password'})
+        }
+        const token = jwt.sign({userId:user._id}, 
+          process.env.JWT_SECRET_KEY,{
+                expiresIn:"2d"
+            });
+        res.status(200).json({status:true, message:token})
+    }catch(error){
+        res.status(500).send({status: false, message:  error.message})
+    }
+}
 
-module.exports = {createUser}
+
+module.exports = {createUser,login}

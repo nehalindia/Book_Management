@@ -41,7 +41,7 @@ const bookSchema = new mongoose.Schema({
     },
     subcategory: {
         type: String,
-        required:[true,'Title is mandatory']
+        required:[true,'subcategory is mandatory']
     },
     reviews: {
         type: Number, 
@@ -49,7 +49,8 @@ const bookSchema = new mongoose.Schema({
         comment: "Holds number of reviews of this book"
     },
     deletedAt: {
-        type:Date
+        type:Date,
+        default: null
     }, 
     isDeleted: {
         type :Boolean, 
