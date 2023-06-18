@@ -1,4 +1,7 @@
 const bookModel = require('../models/bookModel')
+const reviewModel = require('../models/reviewModel')
+const mongoose = require('mongoose')
+const ObjectId = mongoose.Types.ObjectId
 
 const createBook = async (req,res) => {
     try{
@@ -51,8 +54,118 @@ const createBook = async (req,res) => {
     }catch(error){
         res.status(500).send({status: false, message:  error.message})
     }
-
 }
 
+const getBook = async (req,res) => {
+    try{
+        let filters = {};
+        for (const key in req.query) {
+           filters[key] = req.query[key];
+        }
+        filters["isDeleted"] = false
+        // console.log(filters)
+        let book = await bookModel.find(filters).sort({title:1}).select({_id:1, title:1, excerpt:1, userId:1,category:1,
+        reviews:1,releasedAt:1})
+        if(!book){
+            return res.status(404).send({status :false, message: 'no book found'})
+        }
+        return res.status(200).send({status:true, message: 'Book List', data : book})
 
-module.exports ={createBook}
+    }catch(error){
+        res.status(500).send({status: false, message:error.message})
+    }
+}
+
+const getBookbyId = async (req,res) => {
+    try{
+        let id = req.params.bookId
+        if(!ObjectId.isValid(id)){
+            return res.status(400).send({status: false, message:  'Not a valid Id'});
+        }
+        let book = await bookModel.findById(id).select({__v:0,deletedAt:0})
+        if(!book || book.isDeleted==true){
+            return res.status(404).send({status :false, message: 'no book found'})
+        }
+        let review = await reviewModel.find({bookId:id}).select({_id:1, bookId:1, reviewedBy:1, reviewedAt:1,
+        rating:1, review:1})
+        // let book1 = Object.entries(book)
+        // let book1={}
+        // for (const key in book) {
+        //    book1[key] = book[key];
+        // }
+        book["reviewsData"] = [{name : "nehal"},{gahr : "neemchak"}]
+        console.log(book)
+        return res.status(200).send({status:true, message: 'Book List', data : book,reviewsData:review})
+
+    }catch(error){
+        res.status(500).send({status: false, message:error.message})
+    }
+}
+
+const updateBook = async (req,res) => {
+    try{
+        let id = req.params.bookId
+        if(!ObjectId.isValid(id)){
+            return res.status(400).send({status: false, message:  'Not a valid Id'});
+        }
+        let book = await bookModel.findById(id)
+        if(!book || book.isDeleted==true){
+            return res.status(404).send({status :false, message: 'no book found'})
+        }
+
+        let data = req.body
+        for(let key in data){
+            if(key!='title'|| key!='excerpt'||key!='releasedAt'||key!='ISBN'){
+                return res.status(400).send({status: false, message:'You can not update extra field'});
+            }
+        }
+        if(data.title){
+            let book = await bookModel.findOne({title:data.title})
+            if(book){
+                return res.status(400).send({status :false, message: 'tittle already exist'})
+            }
+        }
+        if(data.ISBN){
+            let book = await bookModel.findOne({ISBN:data.ISBN})
+            if(book){
+                return res.status(400).send({status :false, message: 'ISBN already exist'})
+            }
+        }
+
+        const save = await bookModel.findOneAndUpdate(
+            { _id:id },
+            data,
+            { new :true }
+        );
+        res.status(200).send({status:true, message: "update successfully", data: save})
+        
+    }catch(error){
+        res.status(500).send({status:false, message: error.message})
+    }
+}
+
+const deleteBook = async function(req,res){
+    try{
+        let id = req.params.bookId
+        if(!ObjectId.isValid(id)){
+            return res.status(400).send({status: false, message:  'Not a valid Id'});
+        }
+        let book = await bookModel.findById(id)
+        if(!book){
+            return res.status(404).send({status :false, message: 'no book found '})
+        }
+        if(book.isDeleted==true){
+            return res.status(404).send({status :false, message: 'book already deleted'})
+        }
+
+        
+        const dateUp = {deletedAt : new Date(), isDeleted :true}
+        await bookModel.updateOne({_id:id}, {$set : dateUp})
+        res.status(200).send({status:true, message:"book deleted"})
+
+    }catch(error){
+        res.status(500).send({status:false, message: error.message})
+    }
+}
+
+module.exports ={createBook,getBook,getBookbyId,updateBook,deleteBook}
