@@ -86,16 +86,15 @@ const getBookbyId = async (req,res) => {
         if(!book || book.isDeleted==true){
             return res.status(404).send({status :false, message: 'no book found'})
         }
-        let review = await reviewModel.find({bookId:id}).select({_id:1, bookId:1, reviewedBy:1, reviewedAt:1,
+        let review = await reviewModel.find({bookId:id, isDeleted:false}).select({_id:1, bookId:1, reviewedBy:1, reviewedAt:1,
         rating:1, review:1})
-        // let book1 = Object.entries(book)
-        // let book1={}
-        // for (const key in book) {
-        //    book1[key] = book[key];
-        // }
-        book["reviewsData"] = [{name : "nehal"},{gahr : "neemchak"}]
-        console.log(book)
-        return res.status(200).send({status:true, message: 'Book List', data : book,reviewsData:review})
+        
+        const newData = {_id:book._id, title:book.title, excerpt:book.excerpt, userId:book.userId, 
+            category:book.category,
+        subcategory:book.subcategory, isDeleted:book.isDeleted, reviews:book.reviews,releasedAt:book.releasedAt,
+        createdAt:book.createdAt, updatedAt:book.updatedAt, reviewsData:review}
+
+        return res.status(200).send({status:true, message: 'Book List', data : newData})
 
     }catch(error){
         res.status(500).send({status: false, message:error.message})

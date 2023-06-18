@@ -40,7 +40,7 @@ const bookSchema = new mongoose.Schema({
         required:[true,'category is mandatory']
     },
     subcategory: {
-        type: String,
+        type: [String],
         required:[true,'subcategory is mandatory']
     },
     reviews: {

@@ -70,6 +70,15 @@ const updateReview = async function(req,res){
         const save = await reviewModel.findOneAndUpdate(
             { _id:rid }, data, { new :true }
         );
+        let review1 = await reviewModel.find({bookId:id}).select({_id:1, bookId:1, reviewedBy:1, reviewedAt:1,
+            rating:1, review:1})
+
+        const newData = {_id:book._id, title:book.title, excerpt:book.excerpt, userId:book.userId, 
+            category:book.category,
+        subcategory:book.subcategory, isDeleted:book.isDeleted, reviews:book.reviews,releasedAt:book.releasedAt,
+        createdAt:book.createdAt, updatedAt:book.updatedAt, reviewsData:review1}
+
+        return res.status(200).send({status:true, message: 'Book List', data : newData})
         
     }catch(error){
         res.status(500).send({status:false, message: error.message})
@@ -77,6 +86,25 @@ const updateReview = async function(req,res){
 }
 const deleteReview = async function(req,res){
     try{
+        let bid = req.params.bookId
+        let rid = req.params.reviewId
+        if(!ObjectId.isValid(bid)){
+            return res.status(400).send({status: false, message:  'Not a valid Id'});
+        }
+        let book = await bookModel.findById(bid)
+        if(!book || book.isDeleted==true){
+            return res.status(404).send({status :false, message: 'no book found'})
+        }
+        if(!ObjectId.isValid(rid)){
+            return res.status(400).send({status: false, message:  'Not a valid Id'});
+        }
+        let review = await reviewModel.findById(rid)
+        if(!review || review.isDeleted==true){
+            return res.status(404).send({status :false, message: 'no review found'})
+        }
+        const save = await bookModel.findOneAndUpdate( { _id:bid }, {$inc: {reviews:-1}} );
+        await reviewModel.updateOne({_id:rid}, {$set : {isDeleted:true}})
+        res.status(200).send({status:true, message:"review deleted"})
 
     }catch(error){
         res.status(500).send({status:false, message: error.message})
