@@ -2,6 +2,7 @@ const bookModel = require('../models/bookModel')
 const reviewModel = require('../models/reviewModel')
 const mongoose = require('mongoose')
 const ObjectId = mongoose.Types.ObjectId
+const validator = require('validator');
 
 const createBook = async (req,res) => {
     try{
@@ -9,7 +10,7 @@ const createBook = async (req,res) => {
         if(!data.title){
             return res.status(400).send({status :false, message: "Must add title"})
         }
-        const existingUser = await bookModel.findOne({ title: data.title });
+        const existingUser = await bookModel.findOne({ title: data.title,isDeleted:false });
         if(existingUser) {
                 return res.status(400).send({status: false, message:  'Book title already exists'});
         }
@@ -21,17 +22,23 @@ const createBook = async (req,res) => {
         if(!data.userId){
             return res.status(400).send({status :false, message: "Must add userId"})
         }
-        // if(!data.userId==req.userId){
-        //     return res.status(401).send({status :false, message: "userId not matched"})
-        // }
+        if(!ObjectId.isValid(userId)){
+            return res.status(400).send({status: false, message:  'Not a valid Id format'});
+        }
+        if(!data.userId==req.userId){
+            return res.status(401).send({status :false, message: "userId not matched"})
+        }
 
         if(!data.ISBN){
             return res.status(400).send({status :false, message: "Must add isbn number"})
         }
-        if(data.ISBN.length < 13 ){
-            return res.status(400).send({status:false, message:" Not a valid ISBN"})
+        if (!validator.isISBN(data.ISBN)) {
+            return res.status(400).send({ status: false, message: " not a valid ISBN" }); 
         }
-        const exist = await bookModel.findOne({ ISBN: data.ISBN });
+        // if(data.ISBN.length < 13 ){
+        //     return res.status(400).send({status:false, message:" Not a valid ISBN"})
+        // }
+        const exist = await bookModel.findOne({ ISBN: data.ISBN,isDeleted:false });
         if(exist) {
             return res.status(400).send({status: false, message:  'Book ISBN already exists'});
         }
@@ -45,6 +52,10 @@ const createBook = async (req,res) => {
         if(!data.releasedAt){
             return res.status(400).send({status: false, message:  'must add release date'});
         }
+        if(!validator.isDate(data.releasedAt)){
+            return res.status(400).send({status: false, message:  'Add date in proper format'});
+        }
+        // date format validation
 
         let book = await bookModel.create(data)
         let resbook = {_id:book._id, title:book.title, excerpt:book.excerpt, userId:book.userId, ISBN:book.ISBN,

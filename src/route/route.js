@@ -4,13 +4,14 @@ const router = express.Router()
 const {createUser, login} = require('../controller/userController')
 const {createBook, getBook, getBookbyId, updateBook, deleteBook} = require('../controller/bookController')
 const { addReview, updateReview, deleteReview } = require('../controller/reviewController')
+const {userVerify} = require('../middleware/authenticate')
 
 router.post('/register',createUser)
 router.post('/login',login)
 
 router.post('/books',createBook)
 router.get('/books',getBook)
-router.get('/books/:bookId',getBookbyId)
+router.get('/books/:bookId',userVerify,getBookbyId)
 router.put('/books/:bookId',updateBook)
 router.delete('/books/:bookId',deleteBook)
 
