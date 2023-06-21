@@ -22,10 +22,11 @@ const createBook = async (req,res) => {
         if(!data.userId){
             return res.status(400).send({status :false, message: "Must add userId"})
         }
-        if(!ObjectId.isValid(userId)){
+        if(!ObjectId.isValid(data.userId)){
             return res.status(400).send({status: false, message:  'Not a valid Id format'});
         }
-        if(!data.userId==req.userId){
+        
+        if(data.userId!==req.userId){
             return res.status(401).send({status :false, message: "userId not matched"})
         }
 
@@ -122,6 +123,10 @@ const updateBook = async (req,res) => {
         if(!book || book.isDeleted==true){
             return res.status(404).send({status :false, message: 'no book found'})
         }
+        console.log(book.userId.toString(),req.userId)
+        if(book.userId.toString()!==req.userId){
+            return res.status(401).send({status :false, message: "userId not matched"})
+        }
 
         let data = req.body
         for(let key in data){
@@ -134,12 +139,17 @@ const updateBook = async (req,res) => {
                 return res.status(400).send({status :false, message: 'tittle already exist'})
             }
         }
+        
         if(data.ISBN){
+            if (!validator.isISBN(data.ISBN)) {
+                return res.status(400).send({ status: false, message: " not a valid ISBN" }); 
+            }
             let book = await bookModel.findOne({ISBN:data.ISBN})
             if(book){
                 return res.status(400).send({status :false, message: 'ISBN already exist'})
             }
         }
+       
 
         const save = await bookModel.findOneAndUpdate(
             { _id:id },
@@ -166,10 +176,13 @@ const deleteBook = async function(req,res){
         if(book.isDeleted==true){
             return res.status(404).send({status :false, message: 'book already deleted'})
         }
-
+        // console.log(book.userId.toString(),req.userId)
+        if(book.userId.toString()!==req.userId){
+            return res.status(401).send({status :false, message: "userId not matched"})
+        }
         
         const dateUp = {deletedAt : new Date(), isDeleted :true}
-        await bookModel.updateOne({_id:id}, {$set : dateUp})
+        //await bookModel.updateOne({_id:id}, {$set : dateUp})
         res.status(200).send({status:true, message:"book deleted"})
 
     }catch(error){

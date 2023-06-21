@@ -9,15 +9,15 @@ const {userVerify} = require('../middleware/authenticate')
 router.post('/register',createUser)
 router.post('/login',login)
 
-router.post('/books',createBook)
-router.get('/books',getBook)
+router.post('/books',userVerify,createBook)
+router.get('/books',userVerify,getBook)
 router.get('/books/:bookId',userVerify,getBookbyId)
-router.put('/books/:bookId',updateBook)
-router.delete('/books/:bookId',deleteBook)
+router.put('/books/:bookId',userVerify,updateBook)
+router.delete('/books/:bookId',userVerify,deleteBook)
 
-router.post('/books/:bookId/review',addReview)
-router.put('/books/:bookId/review/:reviewId',updateReview)
-router.delete('/books/:bookId/review/:reviewId',deleteReview)
+router.post('/books/:bookId/review',userVerify,addReview)
+router.put('/books/:bookId/review/:reviewId',userVerify,updateReview)
+router.delete('/books/:bookId/review/:reviewId',userVerify,deleteReview)
 
 
 

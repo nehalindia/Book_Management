@@ -15,10 +15,13 @@ const userVerify = async (req,res, next) => {
                     return
                 }
                 const theUser = await userModel.findOne({_id:decoded.userId})
-                // console.log(decoded.userId,theUser)
-                if(!theUser){ return res.status(401).json({status: false, msg: "author not login"})}
                 
-                req.userId = theUser._id
+                if(!theUser){ return res.status(401).json({status: false, msg: "author not login"})}
+                // console.log(req.body.userId , decoded.userId)
+                // if(req.body.userId !== theUser._id){
+                //     return res.status(401).send({status :false, message: "userId not matched"})
+                // }
+                req.userId = decoded.userId
                     next()
             }
          })
