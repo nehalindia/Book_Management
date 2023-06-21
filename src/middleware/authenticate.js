@@ -1,6 +1,7 @@
 const userModel = require("../models/userModel")
 const mongoose = require('mongoose')
 const ObjectId = mongoose.Types.ObjectId
+const jwt = require('jsonwebtoken');
 
 const userVerify = async (req,res, next) => {
     try{
@@ -13,14 +14,16 @@ const userVerify = async (req,res, next) => {
                     res.status(400).send({status: false, message: ` not a valid token id`})
                     return
                 }
-                const theUser = await userModel.findOne({_id:decoded.userId,isDeleted:false})
+                const theUser = await userModel.findOne({_id:decoded.userId})
+                // console.log(decoded.userId,theUser)
                 if(!theUser){ return res.status(401).json({status: false, msg: "author not login"})}
+                
                 req.userId = theUser._id
                     next()
             }
          })
     }catch(error){
-        res.status(500).send({status:false, message: message.error })
+        res.status(500).send({status:false, message: error.message })
     }
 }
 

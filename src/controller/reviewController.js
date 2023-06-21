@@ -62,15 +62,15 @@ const updateReview = async function(req,res){
         }
         let data = req.body
         for(let key in data){
-            if(key!='review'|| key!='rating'||key!='reviewedBy'){
-                return res.status(400).send({status: false, message:'You can not update extra field'});
-            }
+            if(key=='review'|| key=='rating'||key=='reviewedBy'){ console.log(key)}
+            else return res.status(400).send({status: false, message:'You can not update extra field'});
         }
 
         const save = await reviewModel.findOneAndUpdate(
             { _id:rid }, data, { new :true }
         );
-        let review1 = await reviewModel.find({bookId:id}).select({_id:1, bookId:1, reviewedBy:1, reviewedAt:1,
+        // console.log(rid,bid)
+        let review1 = await reviewModel.find({bookId:bid}).select({_id:1, bookId:1, reviewedBy:1, reviewedAt:1,
             rating:1, review:1})
 
         const newData = {_id:book._id, title:book.title, excerpt:book.excerpt, userId:book.userId, 

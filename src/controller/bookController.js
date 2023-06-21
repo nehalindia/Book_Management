@@ -125,9 +125,8 @@ const updateBook = async (req,res) => {
 
         let data = req.body
         for(let key in data){
-            if(key!='title'|| key!='excerpt'||key!='releasedAt'||key!='ISBN'){
-                return res.status(400).send({status: false, message:'You can not update extra field'});
-            }
+            if(key=='title'|| key =='excerpt'||key=='releasedAt'||key=='ISBN'){ }
+            else return res.status(400).send({status: false, message:'You can not update extra field'});
         }
         if(data.title){
             let book = await bookModel.findOne({title:data.title})

@@ -69,6 +69,7 @@ const login = async (req,res)=>{
         if(user.password !== req.body.password){
             return res.status(401).send({status: false,message:'ivalid user password'})
         }
+        // console.log(user)
         const token = jwt.sign({userId:user._id}, 
           process.env.JWT_SECRET_KEY,{
                 expiresIn:"2d"
