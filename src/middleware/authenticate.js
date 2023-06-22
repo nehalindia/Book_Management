@@ -2,6 +2,7 @@ const userModel = require("../models/userModel")
 const mongoose = require('mongoose')
 const ObjectId = mongoose.Types.ObjectId
 const jwt = require('jsonwebtoken');
+require('dotenv').config
 
 const userVerify = async (req,res, next) => {
     try{

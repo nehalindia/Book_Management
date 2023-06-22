@@ -182,7 +182,7 @@ const deleteBook = async function(req,res){
         }
         
         const dateUp = {deletedAt : new Date(), isDeleted :true}
-        //await bookModel.updateOne({_id:id}, {$set : dateUp})
+        await bookModel.updateOne({_id:id}, {$set : dateUp})
         res.status(200).send({status:true, message:"book deleted"})
 
     }catch(error){

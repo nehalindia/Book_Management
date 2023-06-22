@@ -1,6 +1,7 @@
 const userModel = require('../models/userModel')
 const validator = require('validator');
 const jwt = require('jsonwebtoken');
+require('dotenv').config
 
 const createUser = async (req,res) => {
     try{
