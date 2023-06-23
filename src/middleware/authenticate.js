@@ -12,11 +12,11 @@ const userVerify = async (req,res, next) => {
         if(!token) {return res.status(401).send({status:false, message: "token is requires!"})}
         jwt.verify(token, JWT_SECRET_KEY, (err, decoded) => {
             if(err){return res.status(403).send({status:false,message:"Invalid token!"}) }
-            else{       
-                if(!ObjectId.isValid(decoded.userId)) {
-                    res.status(400).send({status: false, message: ` not a valid token id`})
-                    return
-                }
+            // else{       
+                // if(!ObjectId.isValid(decoded.userId)) {
+                //     res.status(400).send({status: false, message: ` not a valid token id`})
+                //     return
+                // }
                 // const theUser = await userModel.findOne({_id:decoded.userId})
                 
                 if(!decoded){ return res.status(401).json({status: false, msg: "author not login"})}
@@ -26,7 +26,7 @@ const userVerify = async (req,res, next) => {
                 // }
                 req.userId = decoded.userId
                     next()
-            }
+            // }
          })
     }catch(error){
         res.status(500).send({status:false, message: error.message })
