@@ -30,12 +30,13 @@ const addReview = async function(req,res){
         data.reviewedAt = new Date()
         let save = await reviewModel.create(data)
         await bookModel.updateOne({_id:id}, {$inc: {reviews:1}})
-        book = await bookModel.findById(id).select({deletedAt:0})
+        book = await bookModel.findById(id).select({deletedAt:0}).lean()
 
-        let newData = {reviews:book.reviews, isDeleted:book.isDeleted, _id:book._id, title:book.title,
-        excerpt:book.excerpt, userId:book.userId, ISBN:book.ISBN, category:book.category,
-        subcategory:book.subcategory, releasedAt:book.releasedAt,createdAt:book.createdAt,
-        updatedAt:book.updatedAt,__v:book.__v, reviewsData: save}
+        let newData = {...book,reviewsData: save}
+        // let newData = {reviews:book.reviews, isDeleted:book.isDeleted, _id:book._id, title:book.title,
+        // excerpt:book.excerpt, userId:book.userId, ISBN:book.ISBN, category:book.category,
+        // subcategory:book.subcategory, releasedAt:book.releasedAt,createdAt:book.createdAt,
+        //  updatedAt:book.updatedAt,__v:book.__v, reviewsData: save}
 
         res.status(200).send({status:true, message:"Review added successfully", data: newData})
     }catch(error){
