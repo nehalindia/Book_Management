@@ -26,9 +26,9 @@ const createBook = async (req,res) => {
             return res.status(400).send({status: false, message:  'Not a valid Id format'});
         }
         
-        if(data.userId!==req.userId){
-            return res.status(401).send({status :false, message: "userId not matched"})
-        }
+        // if(data.userId!==req.userId){
+        //     return res.status(401).send({status :false, message: "userId not matched"})
+        // }
 
         if(!data.ISBN){
             return res.status(400).send({status :false, message: "Must add isbn number"})
