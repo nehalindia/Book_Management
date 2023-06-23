@@ -57,6 +57,8 @@ const createUser = async (req,res) => {
     }
 }
 
+const JWT_SECRET_KEY = "secret-key-for-login"
+
 const login = async (req,res)=>{
     try {
         if (!/^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/.test(req.body.email)) {
@@ -72,7 +74,7 @@ const login = async (req,res)=>{
         }
         // console.log(user)
         const token = jwt.sign({userId:user._id}, 
-          process.env.JWT_SECRET_KEY,{
+            JWT_SECRET_KEY,{
                 expiresIn:"2d"
             });
         res.status(200).json({status:true, message:token})
