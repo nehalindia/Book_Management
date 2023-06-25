@@ -10,7 +10,7 @@ const userVerify = async (req,res, next) => {
     try{
         const token = req.headers["x-api-key"]
         if(!token) {return res.status(401).send({status:false, message: "token is requires!"})}
-        jwt.verify(token, JWT_SECRET_KEY, async (err, decoded) => {
+        jwt.verify(token, process.env.JWT_SECRET_KEY, async (err, decoded) => {
             if(err){return res.status(403).send({status:false,message:"Invalid token!"}) }
             else{       
                 // if(!ObjectId.isValid(decoded.userId)) {
