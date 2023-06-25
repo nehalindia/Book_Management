@@ -31,9 +31,7 @@ const reviewSchema = new mongoose.Schema({
         max :5, 
         required:[true,'rating is mandatory'],
     },
-    review: {
-        type : String
-    },
+    review: String,
     isDeleted: {
         type:Boolean, 
         default: false

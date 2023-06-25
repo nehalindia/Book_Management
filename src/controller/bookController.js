@@ -3,11 +3,16 @@ const reviewModel = require('../models/reviewModel')
 const mongoose = require('mongoose')
 const ObjectId = mongoose.Types.ObjectId
 const validator = require('validator');
+const {isValid,isValidRequestBody} = require('../validation/validator');
+const userModel = require('../models/userModel');
 
 const createBook = async (req,res) => {
     try{
         let data = req.body
-        if(!data.title){
+        if(!isValidRequestBody(data)){
+            return res.status(400).send({status :false, message: "Must add data"})
+        }
+        if(!isValid(data.title)){
             return res.status(400).send({status :false, message: "Must add title"})
         }
         const existingUser = await bookModel.findOne({ title: data.title,isDeleted:false });
@@ -15,22 +20,22 @@ const createBook = async (req,res) => {
                 return res.status(400).send({status: false, message:  'Book title already exists'});
         }
 
-        if(!data.excerpt){
+        if(!isValid(data.excerpt)){
             return res.status(400).send({status :false, message: "Must add excerpt"})
         }
 
-        if(!data.userId){
+        if(!isValid(data.userId)){
             return res.status(400).send({status :false, message: "Must add userId"})
         }
         if(!ObjectId.isValid(data.userId)){
             return res.status(400).send({status: false, message:  'Not a valid Id format'});
         }
-        
-        // if(data.userId!==req.userId){
-        //     return res.status(401).send({status :false, message: "userId not matched"})
-        // }
+        const userexist = await userModel.findById(data.userId)
+        if(!userexist){
+            return res.status(400).send({status :false, message: "userId not matched"})
+        }
 
-        if(!data.ISBN){
+        if(!isValid(data.ISBN)){
             return res.status(400).send({status :false, message: "Must add isbn number"})
         }
         if (!validator.isISBN(data.ISBN)) {
@@ -40,17 +45,17 @@ const createBook = async (req,res) => {
         //     return res.status(400).send({status:false, message:" Not a valid ISBN"})
         // }
         const exist = await bookModel.findOne({ ISBN: data.ISBN,isDeleted:false });
-        if(exist) {
+        if(exist) { 
             return res.status(400).send({status: false, message:  'Book ISBN already exists'});
         }
 
-        if(!data.category){
+        if(!isValid(data.category)){
             return res.status(400).send({status: false, message:  'Category must add'});
         }
-        if(!data.subcategory){
+        if(!isValid(data.subcategory)){
             return res.status(400).send({status: false, message:  'subCategory must add'});
         }
-        if(!data.releasedAt){
+        if(!isValid(data.releasedAt)){
             return res.status(400).send({status: false, message:  'must add release date'});
         }
         if(!validator.isDate(data.releasedAt)){
@@ -71,8 +76,19 @@ const createBook = async (req,res) => {
 const getBook = async (req,res) => {
     try{
         let filters = {};
-        for (const key in req.query) {
-           filters[key] = req.query[key];
+        if(isValidRequestBody(req.query)){
+        const {userId, category, subcategory} = req.query
+
+        if(isValid(userId) && ObjectId.isValid(userId)){
+            filters["userId"] = userId
+        }
+        if(isValid(category)){
+            filters["category"] = category.trim()
+        }
+        if(isValid(subcategory)){
+            filters["subcategory"] = subcategory.trim()
+        }
+
         }
         filters["isDeleted"] = false
         // console.log(filters)
@@ -101,10 +117,12 @@ const getBookbyId = async (req,res) => {
         let review = await reviewModel.find({bookId:id, isDeleted:false}).select({_id:1, bookId:1, reviewedBy:1, reviewedAt:1,
         rating:1, review:1})
         
-        const newData = {_id:book._id, title:book.title, excerpt:book.excerpt, userId:book.userId, 
-            category:book.category,
-        subcategory:book.subcategory, isDeleted:book.isDeleted, reviews:book.reviews,releasedAt:book.releasedAt,
-        createdAt:book.createdAt, updatedAt:book.updatedAt, reviewsData:review}
+        // const newData = {_id:book._id, title:book.title, excerpt:book.excerpt, userId:book.userId, 
+        //     category:book.category,
+        // subcategory:book.subcategory, isDeleted:book.isDeleted, reviews:book.reviews,releasedAt:book.releasedAt,
+        // createdAt:book.createdAt, updatedAt:book.updatedAt, reviewsData:review}
+        const newData = book.toObject()
+        newData["reviewsData"] = review
 
         return res.status(200).send({status:true, message: 'Book List', data : newData})
 
@@ -116,7 +134,11 @@ const getBookbyId = async (req,res) => {
 const updateBook = async (req,res) => {
     try{
         let id = req.params.bookId
+
         if(!ObjectId.isValid(id)){
+            return res.status(400).send({status: false, message:  'Not a valid Id'});
+        }
+        if(!ObjectId.isValid(req.userId)){
             return res.status(400).send({status: false, message:  'Not a valid Id'});
         }
         let book = await bookModel.findById(id)
@@ -125,10 +147,13 @@ const updateBook = async (req,res) => {
         }
         console.log(book.userId.toString(),req.userId)
         if(book.userId.toString()!==req.userId){
-            return res.status(401).send({status :false, message: "userId not matched"})
+            return res.status(403).send({status :false, message: "userId not matched"})
         }
 
         let data = req.body
+        if(!isValidRequestBody(data)){
+            return res.status(400).send({status :false, message: "Must add data"})
+        }
         for(let key in data){
             if(key=='title'|| key =='excerpt'||key=='releasedAt'||key=='ISBN'){ }
             else return res.status(400).send({status: false, message:'You can not update extra field'});
@@ -169,6 +194,9 @@ const deleteBook = async function(req,res){
         if(!ObjectId.isValid(id)){
             return res.status(400).send({status: false, message:  'Not a valid Id'});
         }
+        if(!ObjectId.isValid(req.userId)){
+            return res.status(400).send({status: false, message:  'Not a valid Id'});
+        }
         let book = await bookModel.findById(id)
         if(!book){
             return res.status(404).send({status :false, message: 'no book found '})
@@ -178,7 +206,7 @@ const deleteBook = async function(req,res){
         }
         // console.log(book.userId.toString(),req.userId)
         if(book.userId.toString()!==req.userId){
-            return res.status(401).send({status :false, message: "userId not matched"})
+            return res.status(403).send({status :false, message: "userId not matched"})
         }
         
         const dateUp = {deletedAt : new Date(), isDeleted :true}
@@ -190,4 +218,10 @@ const deleteBook = async function(req,res){
     }
 }
 
-module.exports ={createBook,getBook,getBookbyId,updateBook,deleteBook}
+module.exports ={
+    createBook,
+    getBook,
+    getBookbyId,
+    updateBook,
+    deleteBook
+}

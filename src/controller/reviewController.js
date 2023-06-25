@@ -2,10 +2,14 @@ const bookModel = require('../models/bookModel')
 const reviewModel = require('../models/reviewModel')
 const mongoose = require('mongoose')
 const ObjectId = mongoose.Types.ObjectId
+const {isValid,isValidRequestBody} = require('../validation/validator');
 
 const addReview = async function(req,res){
     try{
         let data = req.body
+        if(!isValidRequestBody(data)){
+            return res.status(400).send({status :false, message: "Must add data"})
+        }
         let id = req.params.bookId
         if(!ObjectId.isValid(id)){
             return res.status(400).send({status: false, message:  'Not a valid Id'});
@@ -14,13 +18,16 @@ const addReview = async function(req,res){
         if(!book || book.isDeleted==true){
             return res.status(404).send({status :false, message: 'no book found'})
         }
-        if(!data.reviewedBy){
+        if(!isValid(data.reviewedBy)){
             return res.status(400).send({status: false, message:  'Must add Name'});
         }  
         // if(!data.reviewedAt){
         //     return res.status(400).send({status: false, message:  'Must add date'});
         // }  
-        if(!data.rating){
+        if(!isValid(data.rating)){
+            return res.status(400).send({status: false, message:  'Must add rating'});
+        }
+        if(!(!isNaN(Number(data.rating)))){
             return res.status(400).send({status: false, message:  'Must add rating'});
         }
         if(data.rating < 1 || data.rating > 5){
@@ -29,6 +36,8 @@ const addReview = async function(req,res){
         data.bookId= id
         data.reviewedAt = new Date()
         let save = await reviewModel.create(data)
+        //  bookModel.reviews = bookModel.reviews + 1
+        //  await bookModel.save()
         await bookModel.updateOne({_id:id}, {$inc: {reviews:1}})
         book = await bookModel.findById(id).select({deletedAt:0}).lean()
 
@@ -38,7 +47,7 @@ const addReview = async function(req,res){
         // subcategory:book.subcategory, releasedAt:book.releasedAt,createdAt:book.createdAt,
         //  updatedAt:book.updatedAt,__v:book.__v, reviewsData: save}
 
-        res.status(200).send({status:true, message:"Review added successfully", data: newData})
+        return res.status(201).send({status:true, message:"Review added successfully", data: newData})
     }catch(error){
         res.status(500).send({status:false, message: error.message})
     }
@@ -62,6 +71,9 @@ const updateReview = async function(req,res){
             return res.status(404).send({status :false, message: 'no review found'})
         }
         let data = req.body
+        if(!isValidRequestBody(data)){
+            return res.status(400).send({status :false, message: "Must add data"})
+        }
         for(let key in data){
             if(key=='review'|| key=='rating'||key=='reviewedBy'){ console.log(key)}
             else return res.status(400).send({status: false, message:'You can not update extra field'});
@@ -112,4 +124,8 @@ const deleteReview = async function(req,res){
     }
 }
 
-module.exports = {addReview,updateReview,deleteReview}
+module.exports = {
+    addReview,
+    updateReview,
+    deleteReview
+}

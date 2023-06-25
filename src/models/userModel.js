@@ -35,6 +35,7 @@ const userSchema = new mongoose.Schema ({
         type : String,
         trim : true,
         required:[true,'must add email'],
+        lowercase:true,
         validate: {
             validator: function (email) {
                 return /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email)
@@ -43,22 +44,16 @@ const userSchema = new mongoose.Schema ({
         unique: true
     }, 
     password: {
-        type: String, 
+        type: String,  
         trim : true,
         required:[true, 'must add strong password'], 
-        minLen :8, 
-        maxLen :15
+        minlength :8, 
+        maxlength :15
     },
     address: {
-      street: {
-            type :String
-        },
-      city: {
-            type: String
-        },
-      pincode: {
-            type : String
-        }
+      street: String,
+      city: String,
+      pincode: String
     }
 
 },{timestamps: true})

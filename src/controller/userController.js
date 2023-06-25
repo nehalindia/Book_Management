@@ -1,44 +1,48 @@
 const userModel = require('../models/userModel')
 const validator = require('validator');
+const {isValid,isValidRequestBody} = require('../validation/validator')
 const jwt = require('jsonwebtoken');
 require('dotenv').config
 
 const createUser = async (req,res) => {
     try{
         let data = req.body
-        if(!data.title){
+        if(!isValidRequestBody(data)){
+            return res.status(400).send({status :false, message: "Must add data"})
+        }
+        if(!isValid(data.title)){
             return res.status(400).send({status :false, message: "Must add title"})
         }
         if (!['Mr', 'Mrs', 'Miss'].includes(data.title)) {
             return res.status(400).json({status: false, message:  'Invalid title. User title will only include - Mr, Mrs, Miss' });
         }
-        if(!data.name){
+        if(!isValid(data.name)){
             return res.status(400).send({status :false, message: "Must add name"})
         }
-        if(!data.email){
+        if(!isValid(data.email)){
             return res.status(400).send({status :false, message: "Must add email"})
         }
         if (!/^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/.test(data.email)) {
-            return res.status(400).send({status: false, message:  'Email should be a valid email address'})
+            return res.status(400).send({status: false, message:  `${data.email} Email should be a valid email address`})
         }
         const existingUser = await userModel.findOne({ email: data.email });
         if(existingUser) {
-                return res.status(400).send({status: false, message:  'Email already exists'});
+                return res.status(400).send({status: false, message:  `${data.email} Email already exists`});
         }
-        if(!data.phone){
+        if(!isValid(data.phone)){
             return res.status(400).send({status :false, message: "Must add mobile number"})
         }
         if(data.phone.length !== 10 ){
             return res.status(400).send({status :false, message: "Must add valid mobile number"})
         }
-        if (!validator.isMobilePhone(data.phone)) {
-            return res.status(400).send({ status: false, message: "plz give a correct number" }); 
+        if(!validator.isMobilePhone(data.phone)) {
+            return res.status(400).send({ status: false, message: `${data.phone} plz give a correct number` }); 
         }
         const existingmobile = await userModel.findOne({ phone: data.phone });
         if(existingmobile) {
-            return res.status(400).send({status: false, message:  'Mobile already exists'});
+            return res.status(400).send({status: false, message:  `${data.phone} Mobile already exists`});
         }
-        if(!data.password){
+        if(!isValid(data.password)){
             return res.status(400).send({status: false, message: 'Must add password'})
         }
         if(data.password.length < 8){
@@ -57,10 +61,17 @@ const createUser = async (req,res) => {
     }
 }
 
-const JWT_SECRET_KEY = "secret-key-for-login"
-
 const login = async (req,res)=>{
     try {
+        if(!isValidRequestBody(req.body)){
+            return res.status(400).send({status :false, message: "Must add data"})
+        }
+        if(!isValid(req.body.email)){
+            return res.status(400).send({status :false, message: "Must add email"})
+        }
+        if(!isValid(req.body.password)){
+            return res.status(400).send({status: false, message: 'Must add password'})
+        }
         if (!/^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/.test(req.body.email)) {
             return res.status(400).send({status: false, message:  'Email should be a valid email address'})
         }
@@ -73,15 +84,21 @@ const login = async (req,res)=>{
             return res.status(401).send({status: false,message:'ivalid user password'})
         }
         // console.log(user)
-        const token = jwt.sign({userId:user._id}, 
-            JWT_SECRET_KEY,{
-                expiresIn:"2d"
-            });
-        res.status(200).json({status:true, message:token})
+        const token = jwt.sign({
+            userId:user._id,
+            iat : Math.floor(Date.now() / 1000),
+            exp : Math.floor(Date.now() / 1000) + 60 * 60 * 60
+            }, 
+            process.env.JWT_SECRET_KEY 
+        )
+        res.status(200).send({status:true, message:"User login sucessful", data:token})
     }catch(error){
         res.status(500).send({status: false, message:  error.message})
     }
 }
 
 
-module.exports = {createUser,login}
+module.exports = {
+    createUser,
+    login
+}
