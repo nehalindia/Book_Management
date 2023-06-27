@@ -9,7 +9,7 @@ const {userVerify,awsfile} = require('../middleware/authenticate')
 router.post('/register',createUser)
 router.post('/login',login)
 
-router.post('/books',userVerify,awsfile,createBook)
+router.post('/books',userVerify,createBook)
 router.get('/books',userVerify,getBook)
 router.get('/books/:bookId',userVerify,getBookbyId)
 router.put('/books/:bookId',userVerify,updateBook)
