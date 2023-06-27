@@ -67,6 +67,7 @@ const userVerify = async (req,res, next) => {
         //             next()
         //     }
         // })
+        if(!decoded){ return res.status(403).send({status:false,message:"Invalid token! author"})}
         req.userId = decoded.userId
         next()
     }catch(error){
