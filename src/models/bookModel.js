@@ -35,6 +35,7 @@ const bookSchema = new mongoose.Schema({
         required : [true,'isbn is mandatory'], 
         unique : true
     },
+    cover : String,
     category: { 
         type:String,
         required:[true,'category is mandatory']

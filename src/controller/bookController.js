@@ -12,6 +12,7 @@ const createBook = async (req,res) => {
         if(!isValidRequestBody(data)){
             return res.status(400).send({status :false, message: "Must add data"})
         }
+
         if(!isValid(data.title)){
             return res.status(400).send({status :false, message: "Must add title"})
         }
@@ -65,7 +66,7 @@ const createBook = async (req,res) => {
 
         let book = await bookModel.create(data)
         let resbook = {_id:book._id, title:book.title, excerpt:book.excerpt, userId:book.userId, ISBN:book.ISBN,
-        category:book.category, subcategory:book.subcategory,isDeleted:book.isDeleted, reviews:book.reviews,releasedAt:
+        category:book.category, subcategory:book.subcategory, cover:book.cover, isDeleted:book.isDeleted, reviews:book.reviews,releasedAt:
         book.releasedAt,createdAt:book.createdAt, updatedAt:book.updatedAt}
         return res.status(201).send({status: true, data: resbook})
     }catch(error){

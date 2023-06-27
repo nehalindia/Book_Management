@@ -4,9 +4,11 @@ const mongoose = require('mongoose')
 const route = require('./route/route')
 const dotenv = require('dotenv')
 dotenv.config()
+const multer = require('multer')
 
 app.use(express.json())
 app.use(express.urlencoded({extended: true}))
+app.use(multer().any())
 
 mongoose.connect(process.env.MONGO_URI)
 .then(

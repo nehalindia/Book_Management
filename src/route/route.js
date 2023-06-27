@@ -4,12 +4,12 @@ const router = express.Router()
 const {createUser, login} = require('../controller/userController')
 const {createBook, getBook, getBookbyId, updateBook, deleteBook} = require('../controller/bookController')
 const { addReview, updateReview, deleteReview } = require('../controller/reviewController')
-const {userVerify} = require('../middleware/authenticate')
+const {userVerify,awsfile} = require('../middleware/authenticate')
 
 router.post('/register',createUser)
 router.post('/login',login)
 
-router.post('/books',userVerify,createBook)
+router.post('/books',userVerify,awsfile,createBook)
 router.get('/books',userVerify,getBook)
 router.get('/books/:bookId',userVerify,getBookbyId)
 router.put('/books/:bookId',userVerify,updateBook)
@@ -19,6 +19,7 @@ router.post('/books/:bookId/review',userVerify,addReview)
 router.put('/books/:bookId/review/:reviewId',userVerify,updateReview)
 router.delete('/books/:bookId/review/:reviewId',userVerify,deleteReview)
 
+router.post('/aws', awsfile)
 
 
 
